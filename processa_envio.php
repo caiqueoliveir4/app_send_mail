@@ -68,13 +68,13 @@ try {
     $mail->Host       = 'smtp.gmail.com';                    // Set the SMTP server to send through
     $mail->SMTPAuth   = true;                                   // Enable SMTP authentication
     $mail->Username   = 'caiquetube@gmail.com';                     // SMTP username
-    $mail->Password   = 'xxxxxxxxxxxxxxxx';                               // SMTP password
+    $mail->Password   = 'xxxxxxxxxxx';                               // SMTP password
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;         // Enable TLS encryption; `PHPMailer::ENCRYPTION_SMTPS` encouraged
     $mail->Port       = 587;                                    // TCP port to connect to, use 465 for `PHPMailer::ENCRYPTION_SMTPS` above
 
     //Recipients
     $mail->setFrom('caiquetube@gmail.com', 'Caique');
-    $mail->addAddress('caiquepark@hotmail.com', 'caique');     // Add a recipient
+    $mail->addAddress($mensagem->__get('para'));     // Add a recipient
     // $mail->addAddress('ellen@example.com');               // Name is optional
     //$mail->addReplyTo('info@example.com', 'Information');
     // $mail->addCC('cc@example.com');
@@ -86,12 +86,12 @@ try {
 
     // Content
     $mail->isHTML(true);                                  // Set email format to HTML
-    $mail->Subject = 'Here is the subject';
-    $mail->Body    = 'This is the HTML message body <b>in bold!</b>';
-    $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+    $mail->Subject = $mensagem->__get('assunto');
+    $mail->Body    = $mensagem->__get('mensagem');
+    $mail->AltBody = 'É necessário utilizar um cliente que suporte HTML para ter total acesso ao conteúdo dessa mensagem';
 
     $mail->send();
-    echo 'Message has been sent';
+    echo 'E-mail enviado com sucesso';
 } catch (Exception $e) {
     echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
 }
