@@ -1,69 +1,74 @@
 <?php
 // requerindo bibliotecas do PHPMailor 
-    require "bibliotecas/PHPMailer/Exception.php";
-    require "bibliotecas/PHPMailer/OAuth.php";
-    require "bibliotecas/PHPMailer/PHPMailer.php";
-    require "bibliotecas/PHPMailer/POP3.php";
-    require "bibliotecas/PHPMailer/SMTP.php";
+require "bibliotecas/PHPMailer/Exception.php";
+require "bibliotecas/PHPMailer/OAuth.php";
+require "bibliotecas/PHPMailer/PHPMailer.php";
+require "bibliotecas/PHPMailer/POP3.php";
+require "bibliotecas/PHPMailer/SMTP.php";
 
-    // usando o "use" para estrair o recuros do namespace
-    use PHPMailer\PHPMailer\PHPMailer;
-    use PHPMailer\PHPMailer\Exception;
-    use PHPMailer\PHPMailer\SMTP;
+// usando o "use" para estrair o recuros do namespace
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\SMTP;
 
-    
-  
-     
+
+
+
 
 
 // criando classe 
-    class Mensagem {
-        // criando atributos privados para está classe 
-        private $para = null;
-        private $assunto = null;
-        private $mensagem = null;
-        /*criando os metodos ou funções magicas get e set para essa classe "Mensagem"
+class Mensagem
+{
+    // criando atributos privados para está classe 
+    private $para = null;
+    private $assunto = null;
+    private $mensagem = null;
+    public $status = array('condigo_status' => null, 'descricao_status' => '');
+    /*criando os metodos ou funções magicas get e set para essa classe "Mensagem"
         */
-        public function __get($atributos) {
-            return $this->$atributos;
-        }
-        public function __set($atributos, $valor) {
-            $this->$atributos = $valor;
-        }
-        // criando metodos ou função "mensagemValida()"
-        public function mensagemValida() {
-            // validar os dados para verifcar se são verdadeiros ou não
-            if(empty($this->para) || empty($this->assunto) || empty($this->mensagem)) {
-                // se for vazio então
-                return false;
-            }
-            // caso contrario retorne
-            return true;
-        }
+    public function __get($atributos)
+    {
+        return $this->$atributos;
     }
+    public function __set($atributos, $valor)
+    {
+        $this->$atributos = $valor;
+    }
+    // criando metodos ou função "mensagemValida()"
+    public function mensagemValida()
+    {
+        // validar os dados para verifcar se são verdadeiros ou não
+        if (empty($this->para) || empty($this->assunto) || empty($this->mensagem)) {
+            // se for vazio então
+            return false;
+        }
+        // caso contrario retorne
+        return true;
+    }
+}
 
-    // criar uma variavel e atribuir a ela uma  instancia dessa classe "Mensagem"
-    $mensagem = new Mensagem();
-    /* apartir da variavel "mensagem que isntancia meu objeto",
+// criar uma variavel e atribuir a ela uma  instancia dessa classe "Mensagem"
+$mensagem = new Mensagem();
+/* apartir da variavel "mensagem que isntancia meu objeto",
     eu vou utiliar "->" e na sequencia executar o metodo __set para setar os valores */
-    $mensagem-> __set('para', $_POST['para']);
-    $mensagem-> __set('assunto', $_POST['assunto']);
-    $mensagem->__set('mensagem', $_POST['mensagem']);
-    // dessa forma criamos um objeto com base nos dados recebidos no formulario
-    
-    /*agora podemos executar o metodo "mesagemValida() atravéz da variavel mensagem
+$mensagem->__set('para', $_POST['para']);
+$mensagem->__set('assunto', $_POST['assunto']);
+$mensagem->__set('mensagem', $_POST['mensagem']);
+// dessa forma criamos um objeto com base nos dados recebidos no formulario
+
+/*agora podemos executar o metodo "mesagemValida() atravéz da variavel mensagem
      que armazena a intancia do objeto*/
 
-     If(!$mensagem->mensagemValida()) {
-        echo 'Mensagem não é valida';
-        die();
-     }
+if (!$mensagem->mensagemValida()) {
+    echo 'Mensagem não é valida';
+    header('Location: index.php');
+}
 
-     $mail = new PHPMailer(true);
+$mail = new PHPMailer(true);
 
 try {
     //Server settings
-    $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      // Enable verbose debug output
+    $mail->SMTPDebug = false;                      // Enable verbose debug output
     $mail->isSMTP();                                            // Send using SMTP
     $mail->Host       = 'smtp.gmail.com';                    // Set the SMTP server to send through
     $mail->SMTPAuth   = true;                                   // Enable SMTP authentication
@@ -91,9 +96,61 @@ try {
     $mail->AltBody = 'É necessário utilizar um cliente que suporte HTML para ter total acesso ao conteúdo dessa mensagem';
 
     $mail->send();
-    echo 'E-mail enviado com sucesso';
+
+    $mensagem->status['codigo_status'] = 1;
+    $mensagem->status['descricao_status'] =  'E-mail enviado com sucesso';
 } catch (Exception $e) {
-    echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+
+    $mensagem->status['codigo_status'] = 2;
+    $mensagem->status['descricao_status'] =  'Não foi possivel enviar este e-mail, por favor tente enviar mais tarde. Detalhes do erro: ' . $mail->ErrorInfo;
+    $mail->ErrorInfo;
 }
 
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Mail Send</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="py-3 text-center">
+            <img class="d-block mx-auto mb-2" src="logo.png" alt="" width="72" height="72">
+            <h2>Send Mail</h2>
+            <p class="lead">Seu app de envio de e-mails particular!</p>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <? if($mensagem->status['codigo_status'] == 1){ ?>
+
+                    <div class="container">
+                        <h1 class="display-4 text-success">Sucesso</h1>
+                        <p><?= $mensagem->status['descricao_status'] ?></p>
+                        <a href="index.php" class="btn btn-success btn-lg mt-5 text-white">Voltar</a> 
+                    </div>
+
+                <? } ?>
+
+                <? if($mensagem->status['codigo_status'] == 2){ ?>
+
+                    <div class="container">
+                        <h1 class="display-4 text-danger">Ops!</h1>
+                        <p><?= $mensagem->status['descricao_status'] ?></p>
+                        <a href="index.php" class="btn btn-success btn-lg mt-5 text-white">Voltar</a> 
+                    </div>
+
+                <? } ?>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
